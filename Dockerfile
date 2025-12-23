@@ -9,11 +9,18 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     curl \
     git \
-    python3 \
-    python3-pip \
+    python3.11 \
+    python3.11-venv \
+    python3.11-distutils \
     ca-certificates \
     supervisor \
     && rm -rf /var/lib/apt/lists/*
+
+# Update python alternative
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
+
+# Install pip for Python 3.11
+RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11
 
 # =====================
 # Install Ollama
@@ -23,10 +30,10 @@ RUN curl -fsSL https://ollama.com/install.sh | sh
 # =====================
 # Install Open WebUI
 # =====================
-RUN pip3 install --no-cache-dir open-webui
+RUN python3.11 -m pip install --no-cache-dir open-webui
 
 # =====================
-# Ollama FULL THROTTLE
+# Environment Variables
 # =====================
 ENV OLLAMA_HOST=0.0.0.0
 ENV OLLAMA_PORT=11434
@@ -47,7 +54,7 @@ RUN ollama serve & \
 # =====================
 RUN mkdir -p /etc/supervisor/conf.d
 
-RUN cat <<'EOF' > /etc/supervisor/conf.d/ollama.conf
+RUN cat << 'EOF' > /etc/supervisor/conf.d/ollama.conf
 [program:ollama]
 command=/usr/local/bin/ollama serve
 autostart=true
@@ -56,9 +63,9 @@ stdout_logfile=/dev/stdout
 stderr_logfile=/dev/stderr
 EOF
 
-RUN cat <<'EOF' > /etc/supervisor/conf.d/webui.conf
+RUN cat << 'EOF' > /etc/supervisor/conf.d/webui.conf
 [program:webui]
-command=python3 -m open_webui --host 0.0.0.0 --port 8080
+command=python3 -m open_webui serve --host 0.0.0.0 --port 8080
 autostart=true
 autorestart=true
 stdout_logfile=/dev/stdout
@@ -66,11 +73,9 @@ stderr_logfile=/dev/stderr
 EOF
 
 # =====================
-# Ports
+# Expose Ports
 # =====================
 EXPOSE 8080 11434
 
-# =====================
-# Start services
 # =====================
 CMD ["/usr/bin/supervisord", "-n"]
