@@ -57,18 +57,22 @@ RUN cat << 'EOF' > /etc/supervisor/conf.d/ollama.conf
 command=/usr/local/bin/ollama serve
 autostart=true
 autorestart=true
-stdout_logfile=/dev/stdout
-stderr_logfile=/dev/stderr
+stdout_logfile=/dev/fd/1
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/fd/2
+stderr_logfile_maxbytes=0
 EOF
 
 # Open WebUI config - ensure it's using the correct Python environment
 RUN cat << 'EOF' > /etc/supervisor/conf.d/webui.conf
 [program:webui]
-command=/env/bin/python3 -m open_webui.serve --host 0.0.0.0 --port 8080
+command=/env/bin/open-webui serve --host 0.0.0.0 --port 8080
 autostart=true
 autorestart=true
-stdout_logfile=/dev/stdout
-stderr_logfile=/dev/stderr
+stdout_logfile=/dev/fd/1
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/fd/2
+stderr_logfile_maxbytes=0
 EOF
 
 # =====================
