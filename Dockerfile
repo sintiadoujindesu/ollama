@@ -54,6 +54,7 @@ RUN ollama serve & \
 # =====================
 RUN mkdir -p /etc/supervisor/conf.d
 
+# Ollama config
 RUN cat << 'EOF' > /etc/supervisor/conf.d/ollama.conf
 [program:ollama]
 command=/usr/local/bin/ollama serve
@@ -63,7 +64,7 @@ stdout_logfile=/dev/stdout
 stderr_logfile=/dev/stderr
 EOF
 
-# Corrected command to run Open WebUI (using `python3 -m open_webui.serve`)
+# Correct Open WebUI config (use python3 -m open_webui.serve)
 RUN cat << 'EOF' > /etc/supervisor/conf.d/webui.conf
 [program:webui]
 command=python3 -m open_webui.serve --host 0.0.0.0 --port 8080
