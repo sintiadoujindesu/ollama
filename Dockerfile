@@ -16,21 +16,18 @@ RUN apt-get update && apt-get install -y \
     supervisor \
     && rm -rf /var/lib/apt/lists/*
 
-# Update python alternative
-RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
+# Create and activate virtual environment
+RUN python3.11 -m venv /env
+ENV PATH="/env/bin:$PATH"
 
-# Install pip for Python 3.11
-RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11
+# Install pip and Open WebUI
+RUN pip install --upgrade pip
+RUN pip install open-webui
 
 # =====================
 # Install Ollama
 # =====================
 RUN curl -fsSL https://ollama.com/install.sh | sh
-
-# =====================
-# Install Open WebUI
-# =====================
-RUN python3.11 -m pip install --no-cache-dir open-webui
 
 # =====================
 # Environment Variables
@@ -64,10 +61,10 @@ stdout_logfile=/dev/stdout
 stderr_logfile=/dev/stderr
 EOF
 
-# Correct Open WebUI config (use python3 -m open_webui.serve)
+# Open WebUI config - ensure it's using the correct Python environment
 RUN cat << 'EOF' > /etc/supervisor/conf.d/webui.conf
 [program:webui]
-command=python3 -m open_webui.serve --host 0.0.0.0 --port 8080
+command=/env/bin/python3 -m open_webui.serve --host 0.0.0.0 --port 8080
 autostart=true
 autorestart=true
 stdout_logfile=/dev/stdout
