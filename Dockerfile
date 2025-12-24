@@ -63,9 +63,10 @@ stdout_logfile=/dev/stdout
 stderr_logfile=/dev/stderr
 EOF
 
+# Corrected command to run Open WebUI (using `python3 -m open_webui.serve`)
 RUN cat << 'EOF' > /etc/supervisor/conf.d/webui.conf
 [program:webui]
-command=python3 -m open_webui serve --host 0.0.0.0 --port 8080
+command=python3 -m open_webui.serve --host 0.0.0.0 --port 8080
 autostart=true
 autorestart=true
 stdout_logfile=/dev/stdout
@@ -77,5 +78,7 @@ EOF
 # =====================
 EXPOSE 8080 11434
 
+# =====================
+# Start Supervisor
 # =====================
 CMD ["/usr/bin/supervisord", "-n"]
